@@ -1,0 +1,3 @@
+#!/bin/bash
+mv [[:upper:]]
+8* /tmp/u
