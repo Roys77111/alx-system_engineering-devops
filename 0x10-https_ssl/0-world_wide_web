@@ -1,20 +1,14 @@
 #!/usr/bin/env bash
-# a Bash script that will display information about subdomains
-# shellcheck disable=SC2086
+# display information about subdomains. Arguments =  domain: type=> string, what=> domain name to audit, mandatory=> yes. Subdomain = type=> string, what=> specific subdomain to audit, mandatory => no. Output: The subdomain [SUB_DOMAIN] is a [RECORD_TYPE] record and points to [DESTINATION]
 
-info () {
-if [ $# -eq 2 ]
+if [ "$#" -eq 1 ];
 then
-	sub="$2"
-	dig $2.$1 | grep -A1 'ANSWER SECTION:' | tail -1 | awk '{print "The subdomain '$sub' is a "$4" record and points to "$NF""}'
-elif [ $# -eq 1 ]
-then
-	subs=('www' 'lb-01' 'web-01' 'web-02')
-        for each in "${subs[@]}"
+	subdomain=("www" "lb-01" "web-01" "web-02")
+	for i in "${subdomain[@]}"
 	do
-        	dig $each.$1 | grep -A1 'ANSWER SECTION:' | tail -1 | awk '{print "The subdomain '$each' is a "$4" record and points to "$NF""}'
-        done
+	dig "$i"."$1"| grep -A1 'ANSWER SECTION:' | awk 'NR==2{SUB=$1; REC=$4; DEST=$5; split(SUB, subx, "."); print "The subdomain " subx[1], "is a " REC, "record and points to " DEST}';
+	done
+elif [ "$#" -eq 2 ];
+then
+	dig "$2"."$1" | grep -A1 'ANSWER SECTION:' | awk 'NR==2{SUB=$1; REC=$4; DEST=$5; split(SUB, subx, "."); print "The subdomain " subx[1], "is a " REC, "record and points to " DEST}';
 fi
-}
-
-info $1 $2
