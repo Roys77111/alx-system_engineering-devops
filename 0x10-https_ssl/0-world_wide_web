@@ -1,14 +1,26 @@
 #!/usr/bin/env bash
-# display information about subdomains. Arguments =  domain: type=> string, what=> domain name to audit, mandatory=> yes. Subdomain = type=> string, what=> specific subdomain to audit, mandatory => no. Output: The subdomain [SUB_DOMAIN] is a [RECORD_TYPE] record and points to [DESTINATION]
+# write a Bash script that will display information about the subdomains
 
-if [ "$#" -eq 1 ];
+function output()
+{
+	result=$(dig "$1" | grep -A1 'ANSWER SECTION:' | grep -v ';; ANSWER SECTION')
+	sub=$(echo "$1" | cut -d '.' -f 1)
+	record=$(echo "$result" | awk '{print $4}')
+	ip=$(echo "$result" | awk '{print $NF}')
+	echo "The subdomain $sub is a $record record and points to $ip"
+}
+
+if [ $# -ge 1 ];
 then
-	subdomain=("www" "lb-01" "web-01" "web-02")
-	for i in "${subdomain[@]}"
-	do
-	dig "$i"."$1"| grep -A1 'ANSWER SECTION:' | awk 'NR==2{SUB=$1; REC=$4; DEST=$5; split(SUB, subx, "."); print "The subdomain " subx[1], "is a " REC, "record and points to " DEST}';
-	done
-elif [ "$#" -eq 2 ];
-then
-	dig "$2"."$1" | grep -A1 'ANSWER SECTION:' | awk 'NR==2{SUB=$1; REC=$4; DEST=$5; split(SUB, subx, "."); print "The subdomain " subx[1], "is a " REC, "record and points to " DEST}';
+	if [ $# -eq 2 ];
+	then
+		output "$2.$1"
+	else
+		output "www.$1"
+		output "lb-01.$1"
+		output "web-01.$1"
+		output "web-02.$1"
+	fi
+else
+	echo "Less than 1 arg"
 fi
