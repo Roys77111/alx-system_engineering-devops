@@ -10,7 +10,6 @@ if __name__ == "__main__":
     import requests
     import sys
 
-
     EMPLOYEE_ID = sys.argv[1]
 
     link = "https://jsonplaceholder.typicode.com/users"
