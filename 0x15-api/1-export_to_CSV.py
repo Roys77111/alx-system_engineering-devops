@@ -1,39 +1,18 @@
 #!/usr/bin/python3
-"""
-    Calls to data from the jsonplaceholder website parsed to csv formats
-    from task 0, extend your Python script to export data in the CSV format
-"""
+"""Exports to-do list information for a given employee ID to CSV format."""
+import csv
+import requests
+import sys
+
 if __name__ == "__main__":
-    """
-        extend your Python script i task 0 to export data in the CSV format
-    """
+    user_id = sys.argv[1]
+    url = "https://jsonplaceholder.typicode.com/"
+    user = requests.get(url + "users/{}".format(user_id)).json()
+    username = user.get("username")
+    todos = requests.get(url + "todos", params={"userId": user_id}).json()
 
-    import csv
-    import requests
-    import sys
-
-    EMPLOYEE_ID = sys.argv[1]
-
-    link = "https://jsonplaceholder.typicode.com/users"
-    userResponse = requests.get(f"{link}/{EMPLOYEE_ID}")
-    EMPLOYEE_NAME = userResponse.json().get("name")
-    fileName = "{}.csv".format(EMPLOYEE_ID)
-
-    todoList = requests.get(f"{link}/{EMPLOYEE_ID}/todos").json()
-    with open(fileName, "w", newline="") as fd:
-        pen = csv.writer(
-                fd,
-                delimiter=',',
-                quotechar='"',
-                quoting=csv.QUOTE_ALL
-            )
-
-        for task in todoList:
-            line = [
-                    EMPLOYEE_ID,
-                    EMPLOYEE_NAME,
-                    task.get('completed'),
-                    task.get('title')
-                ]
-
-            pen.writerow(line)
+    with open("{}.csv".format(user_id), "w", newline="") as csvfile:
+        writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+        [writer.writerow(
+            [user_id, username, t.get("completed"), t.get("title")]
+         ) for t in todos]
